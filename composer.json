@@ -1,0 +1,34 @@
+{
+    "name": "mazimez/laravel-gigapay",
+    "description": "A simple API wrapper to Gigapay's APIs for Laravel Framework",
+    "keywords": [
+        "gigapay",
+        "laravel",
+        "payment"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Asif Patel",
+            "email": "asif987patel@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "guzzlehttp/guzzle": "7.4.x-dev",
+        "symfony/psr-http-message-bridge": "2.1.x-dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mazimez\\Gigapay\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mazimez\\Gigapay\\GigapayServiceProvider"
+            ]
+        }
+    }
+}
