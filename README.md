@@ -1,5 +1,10 @@
 <div align="center">
     <p><img src="cover.png" alt="Laravel In-app Purchase cover"></p>
+    <p>
+    <img src="https://img.shields.io/github/issues/mazimez/laravel-gigapay">
+    <img src="https://img.shields.io/github/forks/mazimez/laravel-gigapay">
+    <img src="https://img.shields.io/github/stars/mazimez/laravel-gigapay">
+</p>
 </div>
 
 # Laravel-Gigapay
@@ -35,6 +40,10 @@ To understand the Event flow of `Gigapay`, you can see it's [Event Documentation
   * [Retrieve single](#invoice-retrieve)
   * [Update](#invoice-update)
   * [Delete](#invoice-delete)
+- [Pricing](#pricing)
+  * [List](#pricing-list)
+  * [Retrieve single](#pricing-retrieve)
+  * [Calculate Pricing](#pricing-calculate)
 - [ListResource](#listresource)  
   * [Pagination](#paginate)
   * [Search](#search)
@@ -281,8 +290,8 @@ You can retrieve any `payout` by it's id. you can get more info from [`Gigapay` 
 ```php
 use Mazimez\Gigapay\Payout;
 
-$employee = Payout::findById('1'); //getting employee by it's id
-return $employee->getJson();
+$payout = Payout::findById('1'); //getting payout by it's id
+return $payout->getJson();
 ```
 
 ### payout-delete
@@ -321,7 +330,7 @@ you can learn more about that from [Gigapay doc](https://developer.gigapay.se/#i
 
 
 ### invoice-list
-The Invoice::list() method will return the [ListResource](#listresource) for invoices that you can use to apply filters and search into all your invoice. you can get more info from [`Gigapay` doc](https://developer.gigapay.se/#list-all-invoices)
+The `Invoice::list()` method will return the [ListResource](#listresource) for invoices that you can use to apply filters and search into all your invoice. you can get more info from [`Gigapay` doc](https://developer.gigapay.se/#list-all-invoices)
 ```php
 use Mazimez\Gigapay\Invoice;
 
@@ -367,6 +376,54 @@ use Mazimez\Gigapay\Invoice;
 $invoice = Invoice::findById('f3ee8cb8-fc95-4ea2-9b2e-18875b0d759a');//getting invoice by it's ID
 $invoice->destroy(); //deletes the invoice
 return $invoice->getJson(); //return the empty invoice instance
+```
+# Pricing
+- The Pricing Resource allows you to calculate the price of payout you would like to make, and to retrieve the price information about previously made payouts. The Resource is designed to mirror the Payouts Resource as closely as possible, e.g. the same request can be used to retrieve the price information of a Payout you'd like to make and to actually make it.
+- Either `amount`, `invoiced_amount` or `cost` is used as a basis for calculating the Pricing breakdown. 
+- One is provided and the other are calculated based on that. Their definitions are:
+ 1. `amount`: net amount paid out plus obligations paid by the recipient.
+ 2. `invoiced_amount`: `amount` plus obligations paid by the employer.
+ 3. `cost`: `invoiced_amount` plus Gigapay's fee. This is the final amount you end up paying.
+### Pricing-List
+The `Pricing::list()` method will return the [ListResource](#listresource) for pricing that you can use to apply filters. you can get more info from [`Gigapay` doc](https://developer.gigapay.se/#list-pricing-info)
+```php
+use Mazimez\Gigapay\Pricing;
+
+$pricing = Pricing::list(); //getting list of pricing
+$pricing = $pricing->paginate(1, 5);  //add pagination
+return $pricing->getJson();
+```
+### Pricing-Retrieve
+You can retrieve any payout's Pricing info by payout's id. you can get more info from [`Gigapay` doc](https://developer.gigapay.se/#retrieve-pricing-info-of-payout)
+```php
+use Mazimez\Gigapay\Pricing;
+
+$pricing = Pricing::findById('89f9cfbe-f1ec-4d17-a895-21cdb584eb4d')//getting pricing info by payout's ID
+return $pricing->getJson();
+```
+### Pricing-Calculate
+- Pricing resource mainly helps you calculating the payouts before actually making it. you can use `Pricing::calculatePricing` method to calculate any payout without actually making it.
+- while calculating pricing, you need to give `employee_id` as well as the amount that you want to pay, you can give either the `amount` or `cost` or `invoiced_amount` according to your need.
+```php
+use Mazimez\Gigapay\Pricing;
+
+$pricing = Pricing::calculatePricing(
+        '0d42728d-b565-402d-80aa-a20bec94a9a2', //id of employee that you want to pay
+        'SEK', //currency of payout
+        null, //cost (only 1 out cost, amount and invoiced_amount is allowed)
+        '120', //amount (only 1 out cost, amount and invoiced_amount is allowed)
+        null, //invoiced_amount (only 1 out cost, amount and invoiced_amount is allowed)
+        'test', //description
+        false, //full_salary_specification
+        json_encode([
+            "data" => "data from your system" //metadata of payout
+        ]), 
+        null, //start_at
+        null, //end_at
+        null, //id
+    );
+return $pricing->getJson();
+    
 ```
 
 # ListResource
@@ -449,7 +506,7 @@ use Mazimez\Gigapay\Invoice;
 
 try {
     return Invoice::findById("non-exiting-id")->getJson(); //code that will surely gives error.
-} catch (GigapayException $th) { //catching the error will GigapayException
+} catch (GigapayException $th) { //catching the error with GigapayException
     return [
         'message' => $th->getErrorMessage(), //the error message
         'json' => $th->getJson() //the json

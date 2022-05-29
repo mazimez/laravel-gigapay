@@ -16,8 +16,8 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "guzzlehttp/guzzle": "7.4.x-dev",
-        "symfony/psr-http-message-bridge": "2.1.x-dev"
+        "guzzlehttp/guzzle": "^7.4",
+        "symfony/psr-http-message-bridge": "^2.1"
     },
     "autoload": {
         "psr-4": {
