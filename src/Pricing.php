@@ -212,6 +212,43 @@ class Pricing
     }
 
     /**
+     * calculate bulk pricing info
+     * doc: https://developer.gigapay.se/#calculate-bulk-pricing-info
+     *
+     * @param array $payouts
+     * @return array of \Mazimez\Gigapay\Pricing
+     */
+    static function calculateBulk(array $payouts)
+    {
+        $url = Pricing::getUrl();
+        foreach ($payouts as $payout) {
+            if (!isset($payout['employee'])) {
+                throw new Exception('employee field is required.');
+            }
+            if (
+                !isset($payout['amount']) &&
+                !isset($payout['cost']) &&
+                !isset($payout['invoiced_amount'])
+            ) {
+                throw new Exception('Either amount, cost or invoiced_amount is required.');
+            }
+        }
+        $request_manager = new RequestManager();
+        $pricing_jsons =  $request_manager->getData(
+            'POST',
+            $url,
+            [
+                'json' => $payouts
+            ]
+        );
+        $pricing_instances = [];
+        foreach ($pricing_jsons as $pricing_json) {
+            array_push($pricing_instances, new Pricing($pricing_json));
+        }
+        return $pricing_instances;
+    }
+
+    /**
      * convert the Invoice instance to json
      *
      * @return json

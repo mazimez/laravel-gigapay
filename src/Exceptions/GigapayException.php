@@ -59,31 +59,45 @@ class GigapayException extends Exception
         $error_message = null;
         if ($this->json) {
             foreach ($this->json as $key => $value) {
-
                 $problem_message = null;
                 $problem_key = null;
-
-                if ($key != "non_field_errors") {
-                    $problem_key = $key;
-                }
-
-                if (is_array($value)) {
-                    $problem_message = $value[0];
-                } else {
-                    $problem_message = $value;
-                }
-
-                if ($problem_key) {
-                    if ($error_message) {
-                        $error_message = $error_message . ',' . 'Problem with ' . $key . '->' . $problem_message;
-                    } else {
-                        $error_message = 'Problem with ' . $key . '->' . $problem_message;
+                if (is_numeric($key)) {
+                    foreach ($value as $label => $data) {
+                        $problem_key = $label;
+                        if (is_array($data)) {
+                            $problem_message = $data[0];
+                        } else {
+                            $problem_message = $data;
+                        }
+                        if ($error_message) {
+                            $error_message = $error_message . ',' . 'Problem with ' . $problem_key . '->' . $problem_message;
+                        } else {
+                            $error_message = 'Problem with ' . $problem_key . '->' . $problem_message;
+                        }
                     }
                 } else {
-                    if ($error_message) {
-                        $error_message = $error_message . ',' . $problem_message;
+                    if ($key != "non_field_errors") {
+                        $problem_key = $key;
+                    }
+
+                    if (is_array($value)) {
+                        $problem_message = $value[0];
                     } else {
-                        $error_message = $problem_message;
+                        $problem_message = $value;
+                    }
+
+                    if ($problem_key) {
+                        if ($error_message) {
+                            $error_message = $error_message . ',' . 'Problem with ' . $problem_key . '->' . $problem_message;
+                        } else {
+                            $error_message = 'Problem with ' . $problem_key . '->' . $problem_message;
+                        }
+                    } else {
+                        if ($error_message) {
+                            $error_message = $error_message . ',' . $problem_message;
+                        } else {
+                            $error_message = $problem_message;
+                        }
                     }
                 }
             }

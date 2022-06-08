@@ -234,6 +234,46 @@ class Payout
     }
 
     /**
+     * create multiple Payouts with API
+     * doc: https://developer.gigapay.se/#register-multiple-payouts
+     *
+     * @param array $payouts
+     * @return array of \Mazimez\Gigapay\Payout
+     */
+    static function createMultiple(array $payouts)
+    {
+        $url = Payout::getUrl();
+        foreach ($payouts as $payout) {
+            if (!isset($payout['employee'])) {
+                throw new Exception('employee field is required.');
+            }
+            if (!isset($payout['description'])) {
+                throw new Exception('description field is required.');
+            }
+            if (
+                !isset($payout['amount']) &&
+                !isset($payout['cost']) &&
+                !isset($payout['invoiced_amount'])
+            ) {
+                throw new Exception('Either amount, cost or invoiced_amount is required.');
+            }
+        }
+        $request_manager = new RequestManager();
+        $payout_jsons =  $request_manager->getData(
+            'POST',
+            $url,
+            [
+                'json' => $payouts
+            ]
+        );
+        $payout_instances = [];
+        foreach ($payout_jsons as $payout_json) {
+            array_push($payout_instances, new Payout($payout_json));
+        }
+        return $payout_instances;
+    }
+
+    /**
      * get List resource of payout
      * doc: https://developer.gigapay.se/#list-all-payouts
      *

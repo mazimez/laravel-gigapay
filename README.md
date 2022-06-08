@@ -31,6 +31,7 @@ To understand the Event flow of `Gigapay`, you can see it's [Event Documentation
 - [Payout](#payout)
   * [List](#payout-list)
   * [Creation](#payout-creation)
+  * [Multiple Creation](#payout-multiple-creation)
   * [Retrieve single](#payout-retrieve)
   * [Delete](#payout-delete)
   * [Resend](#payout-resend)
@@ -44,6 +45,7 @@ To understand the Event flow of `Gigapay`, you can see it's [Event Documentation
   * [List](#pricing-list)
   * [Retrieve single](#pricing-retrieve)
   * [Calculate Pricing](#pricing-calculate)
+  * [Calculate Bulk](#pricing-calculate-bulk)
 - [ListResource](#listresource)  
   * [Pagination](#paginate)
   * [Search](#search)
@@ -275,6 +277,40 @@ return $payout->getJson();
 ```
 the `getJson()` method will return the `Payout`'s object in JSON format
 
+### payout-multiple-creation
+- `Gigapay` also provides API to create multiple payouts at once
+- All of this payouts will be added to the same Invoice object.
+- it takes an array(json) in the payout object structure.
+- you need to at least provide `employee-id`, `description` and either one from `amount` , `cost` , `invoice_amount`. other things are not required.
+- the you can create payout to different employees all together.
+- you can get more info from [Gigapay doc](https://developer.gigapay.se/#register-multiple-payouts)
+```php
+use Mazimez\Gigapay\Payout;
+
+//creating 3 payouts to 3 different employees (with different specification)
+$payouts =  Payout::createMultiple([
+            [
+                "employee" => "employee-id-1",
+                "description" => "test description",
+                "invoiced_amount" => "210",
+            ],
+            [
+                "employee" => "employee-id-1",
+                "description" => "test description",
+                "cost" => "210",
+                "country" => "SWE",
+            ],
+            [
+                "id" => "test-id",
+                "employee" => "employee-id-1",
+                "description" => "test description",
+                "amount" => "210",
+                "country" => "SWE",
+                "currency" => "SEK"
+            ],
+        ]);
+return $payouts; //returns an array of Payout objects
+```
 ### payout-list
 The Payout::list() method will return the [ListResource](#listresource) for `payouts` that you can use to apply filters and search into all your `payout`. you can get more info from [`Gigapay` doc](https://developer.gigapay.se/#list-all-payouts)
 ```php
@@ -424,6 +460,39 @@ $pricing = Pricing::calculatePricing(
     );
 return $pricing->getJson();
     
+```
+
+### pricing-calculate-bulk
+- `Gigapay` also provides API to calculate the payout in bulk(multiple payouts at once)
+- it takes an array(json) in the payout object structure.
+- you need to at least provide `employee-id`, and either one from `amount` , `cost` , `invoice_amount`. other things are not required (`description` is also not required).
+- the you can calculate pricing for different employees all together.
+- you can get more info from [Gigapay doc](https://developer.gigapay.se/#calculate-bulk-pricing-info)
+```php
+use Mazimez\Gigapay\Pricing;
+
+//calculating pricing info for 3 different payouts to 3 different employees (with different specifications)
+$pricings =  Pricing::calculateBulk([
+            [
+                "employee" => "employee-id-1",
+                "invoiced_amount" => "210",
+            ],
+            [
+                "employee" => "employee-id-1",
+                "description" => "test description",
+                "cost" => "210",
+                "country" => "SWE",
+            ],
+            [
+                "id" => "test-id",
+                "employee" => "employee-id-1",
+                "description" => "test description",
+                "amount" => "210",
+                "country" => "SWE",
+                "currency" => "SEK"
+            ],
+        ]);
+return $pricings; //returns an array of pricing objects
 ```
 
 # ListResource
