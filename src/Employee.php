@@ -165,6 +165,53 @@ class Employee
     }
 
     /**
+     * create the new Employee with API, by giving Array
+     * doc: https://developer.gigapay.se/#register-an-employee
+     *
+     * @param array $employee
+     * @return \Mazimez\Gigapay\Employee
+     */
+    static function createByArray(array $employee)
+    {
+        $url = Employee::getUrl();
+        if (!isset($employee['email']) && !isset($employee['cellphone_number'])) {
+            throw new Exception('Either email or cellphone_number is required.');
+        }
+        $params = [];
+        if (isset($employee['id'])) {
+            $params = array_merge($params, ['id' => $employee['id']]);
+        }
+        if (!isset($employee['name'])) {
+            throw new Exception('Name is required.');
+        } else {
+            $params = array_merge($params, ['name' => $employee['name']]);
+        }
+        if (isset($employee['email'])) {
+            $params = array_merge($params, ['email' => $employee['email']]);
+        }
+        if (isset($employee['country'])) {
+            $params = array_merge($params, ['country' => $employee['country']]);
+        }
+        if (isset($employee['cellphone_number'])) {
+            $params = array_merge($params, ['cellphone_number' => $employee['cellphone_number']]);
+        }
+        if (isset($employee['metadata'])) {
+            $params = array_merge($params, ['metadata' => $employee['metadata']]);
+        }
+        $request_manager = new RequestManager();
+        return new Employee(
+            $request_manager->getData(
+                'POST',
+                $url,
+                [
+                    'form_params' => $params
+                ]
+            )
+        );
+    }
+
+
+    /**
      * get List resource of employee
      * doc: https://developer.gigapay.se/#list-all-employees
      *

@@ -146,21 +146,38 @@ An Employee is an individual performing tasks within your organization, employed
 you can learn more about that from [`Gigapay` doc](https://developer.gigapay.se/#employees)
 
 ### employee-creation
-To create an Employee, you need it's `name` and either `email` or `cellphone_number` other data are not mandatory. the metadata is a `Json` object so remember to use `json_encode()` method. you can get more info about employee's object from [`Gigapay` doc](https://developer.gigapay.se/#the-employee-object)
+- To create an Employee, you need it's `name` and either `email` or `cellphone_number` other data are not mandatory.
+- you can create Employee with `create` method by passing all the data as arguments and you can also use `createByArray` method which takes and array with the same data, in that you only need to add the data that's required.
+- the metadata is a `Json` object so remember to use `json_encode()` method. 
+- you can get more info about employee's object from [`Gigapay` doc](https://developer.gigapay.se/#the-employee-object)
 
 ```php
 use Mazimez\Gigapay\Employee;
 
+//#1 creating Employee by passing all data in arguments
 $employee = Employee::create(
             'jhone doe',  //employee's name (required)
-            '12323test@gmail.com',  //employee's email (has to be unique)
+            'test@gmail.com',  //employee's email (has to be unique)
             null,  //employee's phone number(proper swidish phone number, has to be unique)
-            'SWE', //employee's contry
+            'SWE', //employee's country
             json_encode([
                 "data" => "data from your system"  //any metadata that you want to add from you system(json encoded)
             ]),
-            '123dvsdv23' //employee's ID(has to be unique)
+            '1-2-3' //employee's ID(has to be unique)
         );
+return $employee->getJson();
+
+//#2 creating Employee by passing all data in an array
+$employee = Employee::createByArray([
+    "id"=>"1-2-3", //employee's ID(has to be unique)
+    "name"=>"jhone doe", //employee's name (required)
+    "email"=>"test@gmail.com", //employee's email (has to be unique)
+    "metadata"=>json_encode([
+        "data" => "data from your system" //any metadata that you want to add from you system(json encoded)
+    ]),
+    "cellphone_number"=>"123456789", //employee's phone number(proper swidish phone number, has to be unique)
+    "country"=>"SWE", //employee's country
+]);
 return $employee->getJson();
 ```
 the `getJson()` method will return the Employee's object in JSON format
@@ -252,13 +269,15 @@ you can learn more about that from [`Gigapay` doc](https://developer.gigapay.se/
 
 ### payout-creation
 - To create an `Payout`, you either need it's `amount` or `invoiced_amount` or `cost `, anyone one of these data is required. 
-- also you need to add `Employee id` and `description` for that `payout`. also employee needs to be verified before you start paying him/her. 
+- also you need to add `Employee id` and `description` for that `payout`. also employee needs to be verified before you start paying him/her salaries(`amount`). 
+- just like [Employee](#employee) resource, Payout also have 2 methods for creation. `create` method takes data in Arguments while `createByArray` takes data as an Array.
 - while providing metadata, remember to use `json_encode()` method.
 - you can get more info about `Payout`'s pricing from [Gigapay doc](https://developer.gigapay.se/#pricing)
 
 ```php
 use Mazimez\Gigapay\Payout;
 
+//#1 creating payout with arguments
 $payout = Payout::create(
             '9aa16b42-d0f3-420f-ba57-580c3c86c419', //employee id
             'Instagram samarbete 2021-11-13.', //description for payout
@@ -274,6 +293,19 @@ $payout = Payout::create(
             3 //Unique identifier for the object.
 );
 return $payout->getJson();
+
+//#2 creating payout by array
+$payout = Payout::createByArray([
+            "employee" => "1-2-3", //employee id
+            "invoiced_amount" => "120", //invoice amount of payout
+            "description" => "test description", //description for payout
+            "metadata" => json_encode([
+                "data" => "data from your system" //metadata of payout
+            ]),
+            "currency"=>"SEK", //currency of payout
+            "id"=>"payout-1-2-3" //Unique identifier for the object. 
+        ]);
+return $payout->getJson();
 ```
 the `getJson()` method will return the `Payout`'s object in JSON format
 
@@ -282,7 +314,7 @@ the `getJson()` method will return the `Payout`'s object in JSON format
 - All of this payouts will be added to the same Invoice object.
 - it takes an array(json) in the payout object structure.
 - you need to at least provide `employee-id`, `description` and either one from `amount` , `cost` , `invoice_amount`. other things are not required.
-- the you can create payout to different employees all together.
+- you can create payout to different employees all together.
 - you can get more info from [Gigapay doc](https://developer.gigapay.se/#register-multiple-payouts)
 ```php
 use Mazimez\Gigapay\Payout;
@@ -295,14 +327,14 @@ $payouts =  Payout::createMultiple([
                 "invoiced_amount" => "210",
             ],
             [
-                "employee" => "employee-id-1",
+                "employee" => "employee-id-2",
                 "description" => "test description",
                 "cost" => "210",
                 "country" => "SWE",
             ],
             [
                 "id" => "test-id",
-                "employee" => "employee-id-1",
+                "employee" => "employee-id-3",
                 "description" => "test description",
                 "amount" => "210",
                 "country" => "SWE",
@@ -478,14 +510,14 @@ $pricings =  Pricing::calculateBulk([
                 "invoiced_amount" => "210",
             ],
             [
-                "employee" => "employee-id-1",
+                "employee" => "employee-id-2",
                 "description" => "test description",
                 "cost" => "210",
                 "country" => "SWE",
             ],
             [
                 "id" => "test-id",
-                "employee" => "employee-id-1",
+                "employee" => "employee-id-3",
                 "description" => "test description",
                 "amount" => "210",
                 "country" => "SWE",

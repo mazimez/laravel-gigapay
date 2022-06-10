@@ -234,6 +234,67 @@ class Payout
     }
 
     /**
+     * create the new Payout with API, by giving Array,
+     * doc: https://developer.gigapay.se/#register-a-payout
+     *
+     * @param string $payout
+     * @return \Mazimez\Gigapay\Payout
+     */
+    static function createByArray(array $payout)
+    {
+        $url = Payout::getUrl();
+        if (!isset($payout['amount']) && !isset($payout['cost']) && !isset($payout['invoiced_amount'])) {
+            throw new Exception('Either amount, cost or invoiced_amount is required.');
+        }
+        $params = [];
+        if (isset($payout['id'])) {
+            $params = array_merge($params, ['id' => $payout['id']]);
+        }
+        if (isset($payout['amount'])) {
+            $params = array_merge($params, ['amount' => $payout['amount']]);
+        }
+        if (isset($payout['cost'])) {
+            $params = array_merge($params, ['cost' => $payout['cost']]);
+        }
+        if (isset($payout['currency'])) {
+            $params = array_merge($params, ['currency' => $payout['currency']]);
+        }
+        if (!isset($payout['description'])) {
+            throw new Exception('description is required');
+        } else {
+            $params = array_merge($params, ['description' => $payout['description']]);
+        }
+        if (!isset($payout['employee'])) {
+            throw new Exception('employee is required');
+        } else {
+            $params = array_merge($params, ['employee' => $payout['employee']]);
+        }
+        if (isset($payout['invoiced_amount'])) {
+            $params = array_merge($params, ['invoiced_amount' => $payout['invoiced_amount']]);
+        }
+        if (isset($payout['metadata'])) {
+            $params = array_merge($params, ['metadata' => $payout['metadata']]);
+        }
+        if (isset($payout['start_at'])) {
+            $params = array_merge($params, ['start_at' => $payout['start_at']]);
+        }
+        if (isset($payout['end_at'])) {
+            $params = array_merge($params, ['end_at' => $payout['end_at']]);
+        }
+        $request_manager = new RequestManager();
+        return new Payout(
+            $request_manager->getData(
+                'POST',
+                $url,
+                [
+                    'form_params' => $params
+                ]
+            )
+        );
+    }
+
+
+    /**
      * create multiple Payouts with API
      * doc: https://developer.gigapay.se/#register-multiple-payouts
      *
