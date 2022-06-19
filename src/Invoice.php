@@ -86,16 +86,16 @@ class Invoice
      */
     public function __construct($json)
     {
-        $this->id = $json->id;
-        $this->app = $json->app;
-        $this->price = $json->price;
-        $this->currency = $json->currency;
-        $this->ocr_number = $json->ocr_number;
-        $this->metadata = $json->metadata;
-        $this->open = $json->open;
-        $this->paid_at = $json->paid_at;
-        $this->pdf = $json->pdf;
-        $this->created_at = $json->created_at;
+        $this->id = $json->id ?? null;
+        $this->app = $json->app ?? null;
+        $this->price = $json->price ?? null;
+        $this->currency = $json->currency ?? null;
+        $this->ocr_number = $json->ocr_number ?? null;
+        $this->metadata = $json->metadata ?? null;
+        $this->open = $json->open ?? null;
+        $this->paid_at = $json->paid_at ?? null;
+        $this->pdf = $json->pdf ?? null;
+        $this->created_at = $json->created_at ?? null;
 
         return $this;
     }

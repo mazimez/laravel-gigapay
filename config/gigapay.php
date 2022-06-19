@@ -1,5 +1,15 @@
 <?php
 
+use Mazimez\Gigapay\Events\EmployeeClaimed;
+use Mazimez\Gigapay\Events\EmployeeCreated;
+use Mazimez\Gigapay\Events\EmployeeNotified;
+use Mazimez\Gigapay\Events\EmployeeVerified;
+use Mazimez\Gigapay\Events\InvoiceCreated;
+use Mazimez\Gigapay\Events\InvoicePaid;
+use Mazimez\Gigapay\Events\PayoutAccepted;
+use Mazimez\Gigapay\Events\PayoutCreated;
+use Mazimez\Gigapay\Events\PayoutNotified;
+
 return [
 
     /*
@@ -54,4 +64,46 @@ return [
 
     'lang' => env('GIGAPAY_LANG', 'en'),
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gigapay events mapping
+    |--------------------------------------------------------------------------
+    |
+    | mapping of Gigapay's different webhook events to route that will receive the webhook event
+    |
+    */
+
+    'events_mapping' => [
+        'Employee.created' => 'employee-created',
+        'Employee.notified' => 'employee-notified',
+        'Employee.claimed' => 'employee-claimed',
+        'Employee.verified' => 'employee-verified',
+        'Payout.created' => 'payout-created',
+        'Payout.notified' => 'payout-notified',
+        'Payout.accepted' => 'payout-accepted',
+        'Invoice.created' => 'invoice-created',
+        'Invoice.paid' => 'invoice-paid',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gigapay Events
+    |--------------------------------------------------------------------------
+    |
+    | List of Gigapay events that you can listen to by Listeners.
+    |
+    */
+
+    'events_list' => [
+        EmployeeClaimed::class,
+        EmployeeCreated::class,
+        EmployeeNotified::class,
+        EmployeeVerified::class,
+        InvoiceCreated::class,
+        InvoicePaid::class,
+        PayoutAccepted::class,
+        PayoutCreated::class,
+        PayoutNotified::class,
+    ]
 ];

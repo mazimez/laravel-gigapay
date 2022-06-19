@@ -128,22 +128,22 @@ class Payout
      */
     public function __construct($json)
     {
-        $this->id = $json->id;
-        $this->amount = $json->amount;
-        $this->invoiced_amount = $json->invoiced_amount;
-        $this->cost = $json->cost;
-        $this->country = $json->country;
-        $this->currency = $json->currency;
-        $this->description = $json->description;
-        $this->full_salary_specification = $json->full_salary_specification;
-        $this->employee = $json->employee;
-        $this->invoice = $json->invoice;
-        $this->metadata = $json->metadata;
-        $this->start_at = $json->start_at;
-        $this->end_at = $json->end_at;
-        $this->created_at = $json->created_at;
-        $this->notified_at = $json->notified_at;
-        $this->accepted_at = $json->accepted_at;
+        $this->id = $json->id ?? null;
+        $this->amount = $json->amount ?? null;
+        $this->invoiced_amount = $json->invoiced_amount ?? null;
+        $this->cost = $json->cost ?? null;
+        $this->country = $json->country ?? null;
+        $this->currency = $json->currency ?? null;
+        $this->description = $json->description ?? null;
+        $this->full_salary_specification = $json->full_salary_specification ?? null;
+        $this->employee = $json->employee ?? null;
+        $this->invoice = $json->invoice ?? null;
+        $this->metadata = $json->metadata ?? null;
+        $this->start_at = $json->start_at ?? null;
+        $this->end_at = $json->end_at ?? null;
+        $this->created_at = $json->created_at ?? null;
+        $this->notified_at = $json->notified_at ?? null;
+        $this->accepted_at = $json->accepted_at ?? null;
 
         return $this;
     }

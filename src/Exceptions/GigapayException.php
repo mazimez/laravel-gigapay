@@ -87,10 +87,30 @@ class GigapayException extends Exception
                     }
 
                     if ($problem_key) {
-                        if ($error_message) {
-                            $error_message = $error_message . ',' . 'Problem with ' . $problem_key . '->' . $problem_message;
+                        if ($problem_key == "events") {
+                            foreach ($value as $key => $val) {
+                                if (is_array($val)) {
+                                    foreach ($val as $v) {
+                                        if ($error_message) {
+                                            $error_message = $error_message . ',' . 'Problem with ' . $problem_key . '->' . $v;
+                                        } else {
+                                            $error_message = 'Problem with ' . $problem_key . '->' . $v;
+                                        }
+                                    }
+                                } else {
+                                    if ($error_message) {
+                                        $error_message = $error_message . ',' . 'Problem with ' . $problem_key . '->' . $val;
+                                    } else {
+                                        $error_message = 'Problem with ' . $problem_key . '->' . $val;
+                                    }
+                                }
+                            }
                         } else {
-                            $error_message = 'Problem with ' . $problem_key . '->' . $problem_message;
+                            if ($error_message) {
+                                $error_message = $error_message . ',' . 'Problem with ' . $problem_key . '->' . $problem_message;
+                            } else {
+                                $error_message = 'Problem with ' . $problem_key . '->' . $problem_message;
+                            }
                         }
                     } else {
                         if ($error_message) {

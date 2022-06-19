@@ -11,9 +11,11 @@
 A simple API wrapper for [Gigapay's](https://gigapay.co) APIs. It gives you helper methods that will make your work with `gigapay's` API easy, fast and efficient
 
 
-**Laravel-Gigapay** manage resources like `Employees`, `Invoices` and `Payouts`. although its compatible with Laravel framework, but it can be used into other frameworks too since it doesn't depends on any Laravel library
+**Laravel-Gigapay** manage resources like `Employees`, `Invoices`, `Payouts`, `Pricing` and `Webhooks`.
 
 It uses the APIs provided by `Gigapay`, here is it's [API documentation](https://developer.gigapay.se)
+
+You can also look into the [postman collection](https://documenter.getpostman.com/view/13692349/UyxkkR3T) to call the API by yourself to better understand it.
 
 To understand the Event flow of `Gigapay`, you can see it's [Event Documentation](https://developer.gigapay.se/#events)
 
@@ -46,6 +48,13 @@ To understand the Event flow of `Gigapay`, you can see it's [Event Documentation
   * [Retrieve single](#pricing-retrieve)
   * [Calculate Pricing](#pricing-calculate)
   * [Calculate Bulk](#pricing-calculate-bulk)
+- [Webhook](#webhook)
+  * [Set-up](#webhook-setup)
+  * [List](#webhook-list)
+  * [Creation](#webhook-creation)
+  * [Retrieve single](#webhook-retrieve)
+  * [Update](#webhook-update)
+  * [Delete](#webhook-delete)
 - [ListResource](#listresource)  
   * [Pagination](#paginate)
   * [Search](#search)
@@ -71,6 +80,16 @@ The published config file `config/gigapay.php` looks like:
 
 ```php
 <?php
+
+use Mazimez\Gigapay\Events\EmployeeClaimed;
+use Mazimez\Gigapay\Events\EmployeeCreated;
+use Mazimez\Gigapay\Events\EmployeeNotified;
+use Mazimez\Gigapay\Events\EmployeeVerified;
+use Mazimez\Gigapay\Events\InvoiceCreated;
+use Mazimez\Gigapay\Events\InvoicePaid;
+use Mazimez\Gigapay\Events\PayoutAccepted;
+use Mazimez\Gigapay\Events\PayoutCreated;
+use Mazimez\Gigapay\Events\PayoutNotified;
 
 return [
 
@@ -126,6 +145,48 @@ return [
 
     'lang' => env('GIGAPAY_LANG', 'en'),
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gigapay events mapping
+    |--------------------------------------------------------------------------
+    |
+    | mapping of Gigapay's different webhook events to route that will receive the webhook event
+    |
+    */
+
+    'events_mapping' => [
+        'Employee.created' => 'employee-created',
+        'Employee.notified' => 'employee-notified',
+        'Employee.claimed' => 'employee-claimed',
+        'Employee.verified' => 'employee-verified',
+        'Payout.created' => 'payout-created',
+        'Payout.notified' => 'payout-notified',
+        'Payout.accepted' => 'payout-accepted',
+        'Invoice.created' => 'invoice-created',
+        'Invoice.paid' => 'invoice-paid',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gigapay Events
+    |--------------------------------------------------------------------------
+    |
+    | List of Gigapay events that you can listen to by Listeners.
+    |
+    */
+
+    'events_list' => [
+        EmployeeClaimed::class,
+        EmployeeCreated::class,
+        EmployeeNotified::class,
+        EmployeeVerified::class,
+        InvoiceCreated::class,
+        InvoicePaid::class,
+        PayoutAccepted::class,
+        PayoutCreated::class,
+        PayoutNotified::class,
+    ]
 ];
 ```
 once the config file is ready, you need to add some variables into your `.env` file. there are 4 variables
@@ -136,8 +197,8 @@ once the config file is ready, you need to add some variables into your `.env` f
 
 keep in mind that `Gigapay` has separate token and integration id for each server, so whenever you switch server, remember to update SERVER URL with tokens and integration id too.
 ```dosini
-GIGAPAY_TOKEN=""
-GIGAPAY_INTEGRATION_ID=""
+GIGAPAY_TOKEN="your-gigapay-account-token"
+GIGAPAY_INTEGRATION_ID="yours-gigapay-account-integration-id"
 GIGAPAY_SERVER_URL="https://api.demo.gigapay.se/v2"
 GIGAPAY_LANG="en"
 ```
@@ -320,27 +381,31 @@ the `getJson()` method will return the `Payout`'s object in JSON format
 use Mazimez\Gigapay\Payout;
 
 //creating 3 payouts to 3 different employees (with different specification)
-$payouts =  Payout::createMultiple([
-            [
-                "employee" => "employee-id-1",
-                "description" => "test description",
-                "invoiced_amount" => "210",
-            ],
-            [
-                "employee" => "employee-id-2",
-                "description" => "test description",
-                "cost" => "210",
-                "country" => "SWE",
-            ],
-            [
-                "id" => "test-id",
-                "employee" => "employee-id-3",
-                "description" => "test description",
-                "amount" => "210",
-                "country" => "SWE",
-                "currency" => "SEK"
-            ],
-        ]);
+$data = collect();
+//any logic for calculating the payout value
+$data->push([
+    "employee" => "employee-id-1",
+    "description" => "test description",
+    "invoiced_amount" => "210",
+]);
+//any logic for calculating the payout value
+$data->push([
+    "employee" => "employee-id-2",
+    "description" => "test description",
+    "cost" => "210",
+    "country" => "SWE",
+]);
+//any logic for calculating the payout value
+$data->push([
+    "id" => "test-id",
+    "employee" => "employee-id-3",
+    "description" => "test description",
+    "amount" => "210",
+    "country" => "SWE",
+    "currency" => "SEK"
+]);
+//creating multiple payouts by giving the array
+$payouts = Payout::createMultiple($data->toArray()); 
 return $payouts; //returns an array of Payout objects
 ```
 ### payout-list
@@ -526,6 +591,171 @@ $pricings =  Pricing::calculateBulk([
         ]);
 return $pricings; //returns an array of pricing objects
 ```
+
+# Webhook
+- Webhooks allows you to receive real-time status updates any time an event happens on your gigapay account. basically it sends you the data of the resource on which the Action is performed.
+- there are total of 9 events, you can get more information from [Gigapay doc](https://developer.gigapay.se/#events)
+- laravel-gigapay provides a simple way to handle all this Webhooks by [Laravel event](https://laravel.com/docs/9.x/events). laravel-gigapay can fire an Event whenever any Webhook sends the data. and then you can listen to this events by [Listeners](https://laravel.com/docs/9.x/events#defining-listeners)
+### webhook-setup
+- In order to receive the webhooks and Use the Listeners, you need to first set-up some things in you Laravel project.
+1. `App URL` : first you need to set the `APP_URL` in you .env file if it's not already set since this URL will be used to register the webhooks.
+```dosini
+APP_URL="https://youwebsite.url"
+```
+2. `Event Discovery`: in order for your Listeners to directly discover the Events from larave-gigapay. you need to enable the Auto discovery. you can do that by going to you project's `EventServiceProvider` and change the method `shouldDiscoverEvents` to return `true`.
+```php
+/**
+* Determine if events and listeners should be automatically discovered.
+*
+* @return bool
+*/
+public function shouldDiscoverEvents()
+{
+    return true;
+}
+```
+3. `Command gigapay:webhook`: laravel-gigapay provides the command that will register all the webhooks with the `APP_URL` and it also has a route that will receive this webhooks and fire the events. so once you run this command with `artisan` you webhooks will get registered
+
+`php artisan gigapay:webhook`
+
+- once this steps are done, your webhooks for `Gigapay` are set-up. now you only need to add the listeners that can listen to this webhook's event.
+
+- here is one example of the Listener that will listen to the event of `Employee.created`
+```php
+<?php
+
+namespace App\Listeners;
+
+use Mazimez\Gigapay\Events\EmployeeCreated;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+class EmployeeCreatedListener
+{
+    /**
+     * Create the event listener.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Handle the event.
+     *
+     * @param  EmployeeCreated  $event
+     * @return void
+     */
+    public function handle(EmployeeCreated $event)
+    {
+        //stuff you can do with this event resource to update you system 
+        $employee = $event->getResource();
+
+        //logging data just as an example
+        $logger = new Logger('gigapay-webhooks-logs');
+        $logger->pushHandler(new StreamHandler(storage_path('logs/gigapay/gigapay-webhooks-logs.log')));
+        $logger->info('employee created with id of ' . $employee->id);
+    }
+}
+```
+- In the above example, the `EmployeeCreatedListener` is listening to the event of `EmployeeCreated` in it's `handle` method.
+- In the `handle` method, you will get the instance of `EmployeeCreated` event on which you can call the method `getResource` that will give you the resource thats related to this event. 
+- The `getResource` method can return different resource based on the events. it can be `Employee`,`Payout` or `Invoice`.
+- once you got the resource you can use that to update your system.
+- since there are total 9 webhooks, there is total 9 different events. you can get that events list from config file of gigapay.php as `events_list`.
+- you have to create 9 different listeners just like above to handle different webhook's events.
+ 
+### webhook-list
+The Webhook::list() method will return the [ListResource](#listresource) for webhooks that you can use to apply filters and search into all your webhooks. you can get more info from [Gigapay doc](https://developer.gigapay.se/#list-all-registered-webhooks)
+```php
+use Mazimez\Gigapay\Webhook;
+
+$webhooks = Webhook::list(); //getting list of webhooks
+$webhooks = $webhooks->paginate(1, 5);  //add pagination
+return $webhooks->getJson();
+```
+
+### webhook-creation
+- If you want to configure the `Gigapay` webhooks in other way then [Laravel event](https://laravel.com/docs/9.x/events). then you can also use the `create` and `createByArray` method just like you can do on other resources.
+- while creating webhooks, only `url` and `events` fields are required.
+```php
+use Mazimez\Gigapay\Webhook;
+
+//creating webhook with create method
+$webhook = Webhook::create(
+    "https://youwebsite.url/webhooks",  //the url on which the webhook will send data
+    "Employee.created",  //name of event
+    null,  //secret_key
+    json_encode(["date" => "data from your system"]),//json encoded data
+    null, //unique id
+);
+return $webhook->getJson();
+
+
+//creating webhook with createByArray method(only required parameters)
+$webhook = Webhook::createByArray([
+    "url" => "https://youwebsite.url/webhooks",
+    "events" => "Employee.created",
+]);
+return $webhook->getJson();
+```
+
+### webhook-retrieve
+You can retrieve any webhook by it's id. you can get more info from [Gigapay doc](https://developer.gigapay.se/#retrieve-a-webhook)
+```php
+use Mazimez\Gigapay\Webhook;
+
+$webhook = Webhook::findById('1'); //getting webhook by it's id
+return $webhook->getJson();
+```
+### webhook-update
+- Webhook resource can be updated any time, the data that can be updated are `id`, `url`, `event`, `metadata` ,'secret_key`. 
+- each data can be updated by calling separate method and also by updating the values on employee object and then calling save() method to update the whole employee object. 
+- remember to use `json_encode()` before saving the metadata
+- also remember that events as to be a string while saving, not in array.
+- also, to update the ID of employee, please use the septate method `updateId()` instead of `save()`, since `save()` will try to update the webhook with current id(new id that doesn't exists in `Gigapay's` Database)
+- the rules about uniqueness and format still applies here. you can get for info from [`Gigapay` doc](https://developer.gigapay.se/#update-a-webhook)
+
+```php
+use Mazimez\Gigapay\Webhook;
+
+//#1: updating values using separate methods
+$webhook = Webhook::findById('webhook-id'); //finding webhook by id
+
+$webhook = $webhook->updateId('new-webhook-id'); //updating id
+$webhook = $webhook->updateUrl("https://youwebsite.new.url/webhooks"); //updating url
+$webhook = $webhook->updateEvent("Payout.created"); //updating event
+$webhook = $webhook->updateSecretKey("new-secret.key"); //updating secret-key
+$webhook = $webhook->updateMetaDate(json_encode([
+    "data" => "some more data from you system",  //updating metadata
+]));
+return $webhook->getJson();
+
+//#2 updating values using save() methods
+$webhook = Webhook::findById('webhook-id'); //finding webhook by id
+
+$webhook->url  = "https://youwebsite.new.url/webhooks"; //updating url
+$webhook->event = "Payout.created"; //updating event
+$webhook->secret_key = "new-secret.key"; //secret-key
+$webhook->metadata = json_encode([
+    "data" => "some more data from you system", //updating metadata
+]);
+$webhook->save(); //saving the webhook object
+return $webhook->getJson();
+```
+
+### webhook-delete
+You can delete any webhook by calling the destroy method on Webhook instance. get for info from [`Gigapay` doc](https://developer.gigapay.se/#update-a-webhook)
+```php
+use Mazimez\Gigapay\Webhook;
+
+$webhook = Webhook::findById('webhook-id'); //getting webhook by it's id
+$webhook->destroy(); //deletes the webhook
+return $webhooks->getJson(); //return the empty webhook instance
+```
+
 
 # ListResource
 This is the class that provides you with some helper methods to get the list of Any resource from `Gigapay`. The methods that you can use is:

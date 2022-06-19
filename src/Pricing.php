@@ -79,15 +79,15 @@ class Pricing
      */
     public function __construct($json)
     {
-        $this->amount = $json->amount;
-        $this->invoiced_amount = $json->invoiced_amount;
-        $this->cost = $json->cost;
-        $this->currency = $json->currency;
-        $this->fee = $json->fee;
-        $this->health_insurance = $json->health_insurance;
-        $this->payroll = $json->payroll;
-        $this->tax = $json->tax;
-        $this->vat = $json->vat;
+        $this->amount = $json->amount ?? null;
+        $this->invoiced_amount = $json->invoiced_amount ?? null;
+        $this->cost = $json->cost ?? null;
+        $this->currency = $json->currency ?? null;
+        $this->fee = $json->fee ?? null;
+        $this->health_insurance = $json->health_insurance ?? null;
+        $this->payroll = $json->payroll ?? null;
+        $this->tax = $json->tax ?? null;
+        $this->vat = $json->vat ?? null;
 
         return $this;
     }

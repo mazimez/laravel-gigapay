@@ -86,16 +86,16 @@ class Employee
      */
     public function __construct($json)
     {
-        $this->id = $json->id;
-        $this->name = $json->name;
-        $this->cellphone_number = $json->cellphone_number;
-        $this->email = $json->email;
-        $this->country = $json->country;
-        $this->metadata = $json->metadata;
-        $this->created_at = $json->created_at;
-        $this->notified_at = $json->notified_at;
-        $this->claimed_at = $json->claimed_at;
-        $this->verified_at = $json->verified_at;
+        $this->id = $json->id ?? null;
+        $this->name = $json->name ?? null;
+        $this->cellphone_number = $json->cellphone_number ?? null;
+        $this->email = $json->email ?? null;
+        $this->country = $json->country ?? null;
+        $this->metadata = $json->metadata ?? null;
+        $this->created_at = $json->created_at ?? null;
+        $this->notified_at = $json->notified_at ?? null;
+        $this->claimed_at = $json->claimed_at ?? null;
+        $this->verified_at = $json->verified_at ?? null;
         return $this;
     }
 

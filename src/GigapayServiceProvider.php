@@ -2,7 +2,9 @@
 
 namespace Mazimez\Gigapay;
 
+use Illuminate\Routing\Route;
 use Illuminate\Support\ServiceProvider;
+use Mazimez\Gigapay\Console\Commands\WebhookCommand;
 
 class GigapayServiceProvider extends ServiceProvider
 {
@@ -20,6 +22,14 @@ class GigapayServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../config/gigapay.php' => config_path('gigapay.php'),
         ]);
+
+        $this->loadRoutesFrom(__DIR__ . '/routes/web.php');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                WebhookCommand::class,
+            ]);
+        }
     }
 
     /**
