@@ -3,7 +3,8 @@
     <p>
     <img src="https://img.shields.io/github/issues/mazimez/laravel-gigapay">
     <img src="https://img.shields.io/github/forks/mazimez/laravel-gigapay">
-    <img src="https://img.shields.io/github/stars/mazimez/laravel-gigapay">
+    <img src="https://img.shields.io/github/installs/mazimez/laravel-gigapay">
+    <img src="https://img.shields.io/packagist/dt/laravel/cashier" alt="Total Downloads"></a>
 </p>
 </div>
 
@@ -394,6 +395,9 @@ $data->push([
     "description" => "test description",
     "cost" => "210",
     "country" => "SWE",
+    "metadata" => [
+        "data" => "data about your system"
+    ],
 ]);
 //any logic for calculating the payout value
 $data->push([
@@ -602,7 +606,8 @@ return $pricings; //returns an array of pricing objects
 ```dosini
 APP_URL="https://youwebsite.url"
 ```
-2. `Event Discovery`: in order for your Listeners to directly discover the Events from larave-gigapay. you need to enable the Auto discovery. you can do that by going to you project's `EventServiceProvider` and change the method `shouldDiscoverEvents` to return `true`.
+2. `Event Discovery` : in order for your Listeners to directly discover the Events from larave-gigapay. you need to enable the Auto discovery.
+- you can do that by going to your project's `EventServiceProvider` and change the method `shouldDiscoverEvents` to return `true`.
 ```php
 /**
 * Determine if events and listeners should be automatically discovered.
@@ -613,6 +618,43 @@ public function shouldDiscoverEvents()
 {
     return true;
 }
+```
+- If you don't want auto discovery to be enabled(or your Laravel version does not support auto discovery) then you can also manually add those Listeners into the `$listen` array.
+```php
+protected $listen = [
+    Registered::class => [
+        SendEmailVerificationNotification::class, //default email verification listener
+    ],
+    //adding our listeners
+    EmployeeClaimed::class => [
+        EmployeeClaimedListener::class, 
+    ],
+    EmployeeCreated::class => [
+        EmployeeCreatedListener::class,
+    ],
+    EmployeeNotified::class => [
+        EmployeeNotifiedListener::class,
+    ],
+    EmployeeVerified::class => [
+        EmployeeVerifiedListener::class,
+    ],
+    InvoiceCreated::class => [
+        InvoiceCreatedListener::class,
+    ],
+    InvoicePaid::class => [
+        InvoicePaidListener::class,
+    ],
+    PayoutAccepted::class => [
+        PayoutAcceptedListener::class,
+    ],
+    PayoutCreated::class => [
+        PayoutCreatedListener::class,
+    ],
+    PayoutNotified::class => [
+        PayoutNotifiedListener::class,
+    ],
+];
+
 ```
 3. `Command gigapay:webhook`: laravel-gigapay provides the command that will register all the webhooks with the `APP_URL` and it also has a route that will receive this webhooks and fire the events. so once you run this command with `artisan` you webhooks will get registered
 
@@ -711,7 +753,7 @@ $webhook = Webhook::findById('1'); //getting webhook by it's id
 return $webhook->getJson();
 ```
 ### webhook-update
-- Webhook resource can be updated any time, the data that can be updated are `id`, `url`, `event`, `metadata` ,'secret_key`. 
+- Webhook resource can be updated any time, the data that can be updated are `id`, `url`, `event`, `metadata` ,`secret_key`. 
 - each data can be updated by calling separate method and also by updating the values on employee object and then calling save() method to update the whole employee object. 
 - remember to use `json_encode()` before saving the metadata
 - also remember that events as to be a string while saving, not in array.

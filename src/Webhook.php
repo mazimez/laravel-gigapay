@@ -270,7 +270,7 @@ class Webhook
     {
         $url = Webhook::getUrl() . '/' . $this->id;
         $request_manager = new RequestManager();
-        $request_manager->getData(
+        $data = $request_manager->getData(
             'PATCH',
             $url,
             [
@@ -279,7 +279,7 @@ class Webhook
                 ]
             ]
         );
-        $this->metadata = json_decode($new_metadata);
+        $this->metadata = $data->metadata;
         return $this;
     }
 
@@ -318,7 +318,7 @@ class Webhook
     {
         $url = Webhook::getUrl() . '/' . $this->id;
         $request_manager = new RequestManager();
-        $request_manager->getData(
+        $data = $request_manager->getData(
             'PATCH',
             $url,
             [
@@ -331,8 +331,8 @@ class Webhook
                 ]
             ]
         );
-        $this->metadata = json_decode((string)$this->metadata);
-        $this->events = [$this->events];
+        $this->metadata = $data->metadata;
+        $this->events = $data->events;
         return $this;
     }
 

@@ -321,7 +321,7 @@ class Employee
     {
         $url = Employee::getUrl() . '/' . $this->id;
         $request_manager = new RequestManager();
-        $request_manager->getData(
+        $data = $request_manager->getData(
             'PATCH',
             $url,
             [
@@ -330,7 +330,7 @@ class Employee
                 ]
             ]
         );
-        $this->metadata = json_decode($new_metadata);
+        $this->metadata = $data->metadata;
         return $this;
     }
 
@@ -393,7 +393,7 @@ class Employee
     {
         $url = Employee::getUrl() . '/' . $this->id;
         $request_manager = new RequestManager();
-        $request_manager->getData(
+        $data = $request_manager->getData(
             'PATCH',
             $url,
             [
@@ -407,7 +407,8 @@ class Employee
                 ]
             ]
         );
-        $this->metadata = json_decode((string)$this->metadata);
+        $this->metadata = $data->metadata;
+
         return $this;
     }
 
