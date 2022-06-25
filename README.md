@@ -4,7 +4,6 @@
     <img src="https://img.shields.io/github/issues/mazimez/laravel-gigapay">
     <img src="https://img.shields.io/github/forks/mazimez/laravel-gigapay">
     <img src="https://img.shields.io/github/installs/mazimez/laravel-gigapay">
-    <img src="https://img.shields.io/packagist/dt/laravel/cashier" alt="Total Downloads"></a>
 </p>
 </div>
 
