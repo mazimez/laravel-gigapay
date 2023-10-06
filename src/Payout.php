@@ -159,6 +159,17 @@ class Payout
     }
 
     /**
+     * get the url for payout resource
+     * for inline employees
+     *
+     * @return $string
+     */
+    static function getInlineUrl()
+    {
+        return config('gigapay.server_url') . '/payouts/?expand=employee';
+    }
+
+    /**
      * create the new Payout with API
      * doc: https://developer.gigapay.se/#register-a-payout
      *
@@ -228,6 +239,63 @@ class Payout
                 $url,
                 [
                     'form_params' => $params
+                ]
+            )
+        );
+    }
+
+    /**
+     * create a new Payout with an Inline employee
+     * doc: https://developer.gigapay.se/#register-a-payout-with-an-inline-employee
+     *
+     * @param string $id
+     * @param string $currency
+     * @param array $employee
+     * @param string $description
+     * @param string $invoiced_amount
+     * @param object $metadata
+     * @return \Mazimez\Gigapay\Payout
+     * @throws Exceptions\GigapayException
+     */
+
+    static function createInline(
+        $id,
+        $currency,
+        $description,
+        $employee,
+        $invoiced_amount,
+        $metadata = null
+    ) {
+        $url = Payout::getInlineUrl();
+        if (!$invoiced_amount) {
+            throw new Exception('Invoiced_amount is required.');
+        }
+        $params = [];
+        if ($id) {
+            $params = array_merge($params, ['id' => $id]);
+        }
+        if ($currency) {
+            $params = array_merge($params, ['currency' => $currency]);
+        }
+        if ($description) {
+            $params = array_merge($params, ['description' => $description]);
+        }
+        if ($employee) {
+            $params = array_merge($params, ['employee' => $employee]);
+        }
+        if ($invoiced_amount) {
+            $params = array_merge($params, ['invoiced_amount' => $invoiced_amount]);
+        }
+        if ($metadata) {
+            $params = array_merge($params, ['metadata' => $metadata]);
+        }
+        $request_manager = new RequestManager();
+        return new Payout(
+            $request_manager->getData(
+                'POST',
+                $url,
+                [
+                    "json" => $params
                 ]
             )
         );
