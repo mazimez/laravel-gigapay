@@ -159,21 +159,10 @@ class Payout
     }
 
     /**
-     * get the url for payout resource
-     * for inline employees
-     *
-     * @return $string
-     */
-    static function getInlineUrl()
-    {
-        return config('gigapay.server_url') . '/payouts/?expand=employee';
-    }
-
-    /**
      * create the new Payout with API
      * doc: https://developer.gigapay.se/#register-a-payout
      *
-     * @param string $employee
+     * @param string $employee_id
      * @param string $description
      * @param string $amount
      * @param string $cost
@@ -186,7 +175,7 @@ class Payout
      * @return \Mazimez\Gigapay\Payout
      */
     static function create(
-        $employee,
+        $employee_id,
         $description,
         $amount = null,
         $cost = null,
@@ -198,6 +187,82 @@ class Payout
         $id = null
     ) {
         $url = Payout::getUrl();
+        if (!$amount && !$cost && !$invoiced_amount) {
+            throw new Exception('Either amount, cost or invoiced_amount is required.');
+        }
+        $params = [];
+        if ($id) {
+            $params = array_merge($params, ['id' => $id]);
+        }
+        if ($amount) {
+            $params = array_merge($params, ['amount' => $amount]);
+        }
+        if ($cost) {
+            $params = array_merge($params, ['cost' => $cost]);
+        }
+        if ($currency) {
+            $params = array_merge($params, ['currency' => $currency]);
+        }
+        if ($description) {
+            $params = array_merge($params, ['description' => $description]);
+        }
+        if ($employee_id) {
+            $params = array_merge($params, ['employee' => $employee_id]);
+        }
+        if ($invoiced_amount) {
+            $params = array_merge($params, ['invoiced_amount' => $invoiced_amount]);
+        }
+        if ($metadata) {
+            $params = array_merge($params, ['metadata' => $metadata]);
+        }
+        if ($start_at) {
+            $params = array_merge($params, ['start_at' => $start_at]);
+        }
+        if ($end_at) {
+            $params = array_merge($params, ['end_at' => $end_at]);
+        }
+        $request_manager = new RequestManager();
+        return new Payout(
+            $request_manager->getData(
+                'POST',
+                $url,
+                [
+                    'form_params' => $params
+                ]
+            )
+        );
+    }
+
+    /**
+     * create a new Payout with an Inline employee
+     * doc: https://developer.gigapay.se/#register-a-payout-with-an-inline-employee
+     *
+     * @param array $employee
+     * @param string $description
+     * @param string $amount
+     * @param string $cost
+     * @param string $invoiced_amount
+     * @param string $currency
+     * @param object $metadata
+     * @param string $start_at
+     * @param string $end_at
+     * @param string $id
+     * @return \Mazimez\Gigapay\Payout
+     * @throws Exceptions\GigapayException
+     */
+    static function createInline(
+        $employee,
+        $description,
+        $amount = null,
+        $cost = null,
+        $invoiced_amount = null,
+        $currency = null,
+        $metadata = null,
+        $start_at = null,
+        $end_at = null,
+        $id = null
+    ) {
+        $url = Payout::getUrl() . '/?expand=employee';
         if (!$amount && !$cost && !$invoiced_amount) {
             throw new Exception('Either amount, cost or invoiced_amount is required.');
         }
@@ -232,63 +297,7 @@ class Payout
         if ($end_at) {
             $params = array_merge($params, ['end_at' => $end_at]);
         }
-        $request_manager = new RequestManager();
-        return new Payout(
-            $request_manager->getData(
-                'POST',
-                $url,
-                [
-                    'form_params' => $params
-                ]
-            )
-        );
-    }
 
-    /**
-     * create a new Payout with an Inline employee
-     * doc: https://developer.gigapay.se/#register-a-payout-with-an-inline-employee
-     *
-     * @param string $id
-     * @param string $currency
-     * @param array $employee
-     * @param string $description
-     * @param string $invoiced_amount
-     * @param object $metadata
-     * @return \Mazimez\Gigapay\Payout
-     * @throws Exceptions\GigapayException
-     */
-
-    static function createInline(
-        $id,
-        $currency,
-        $description,
-        $employee,
-        $invoiced_amount,
-        $metadata = null
-    ) {
-        $url = Payout::getInlineUrl();
-        if (!$invoiced_amount) {
-            throw new Exception('Invoiced_amount is required.');
-        }
-        $params = [];
-        if ($id) {
-            $params = array_merge($params, ['id' => $id]);
-        }
-        if ($currency) {
-            $params = array_merge($params, ['currency' => $currency]);
-        }
-        if ($description) {
-            $params = array_merge($params, ['description' => $description]);
-        }
-        if ($employee) {
-            $params = array_merge($params, ['employee' => $employee]);
-        }
-        if ($invoiced_amount) {
-            $params = array_merge($params, ['invoiced_amount' => $invoiced_amount]);
-        }
-        if ($metadata) {
-            $params = array_merge($params, ['metadata' => $metadata]);
-        }
         $request_manager = new RequestManager();
         return new Payout(
             $request_manager->getData(

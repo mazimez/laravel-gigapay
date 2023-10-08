@@ -59,6 +59,7 @@ class GigapayException extends Exception
         $error_message = null;
         if ($this->json) {
             foreach ($this->json as $key => $value) {
+
                 $problem_message = null;
                 $problem_key = null;
                 if (is_numeric($key)) {
@@ -79,12 +80,18 @@ class GigapayException extends Exception
                     if ($key != "non_field_errors") {
                         $problem_key = $key;
                     }
-
                     if (is_array($value)) {
                         $problem_message = $value[0];
                     } else {
-                        $problem_message = $value;
+                        if (is_object($value)) {
+                            if (isset($value->non_field_errors) && is_array($value->non_field_errors)) {
+                                $problem_message = $value->non_field_errors[0];
+                            }
+                        } else {
+                            $problem_message = $value;
+                        }
                     }
+
 
                     if ($problem_key) {
                         if ($problem_key == "events") {

@@ -34,6 +34,7 @@ To understand the Event flow of `Gigapay`, you can see it's [Event Documentation
   * [List](#payout-list)
   * [Creation](#payout-creation)
   * [Multiple Creation](#payout-multiple-creation)
+  * [Creation with inline Employee](#payout-inline-creation)
   * [Retrieve single](#payout-retrieve)
   * [Delete](#payout-delete)
   * [Resend](#payout-resend)
@@ -369,6 +370,38 @@ $payout = Payout::createByArray([
 return $payout->getJson();
 ```
 the `getJson()` method will return the `Payout`'s object in JSON format
+
+### payout-inline-creation
+- `Gigapay` also provides API to create payouts and employee all together.
+- while creating new Payout and Employee togher, it's important to note that you should use `invoiced_amount` since other type of filed like `cost` and `amount` needs employee to be verified and since it's new Employee, it wont be verified at that point.
+- if you are using this API with some existing Employee then you can use `cost` and `amount` too, it wont create new Employee but just merge it with the given data.
+- the arguments for this method is almost same as normal create method, only change is that now instead of employee-id, you need to pass an array with info like Employee `email` and `name` etc.
+- you can get more info from [Gigapay doc](https://developer.gigapay.se/?javascript#register-a-payout-with-an-inline-employee)
+- thanks @rolandlluka for suggesting this method and adding a pull-request for it. I hope you will be suggesting more improvements too😅
+```php
+use Mazimez\Gigapay\Payout;
+
+$payout = Payout::createInline(
+            [
+                "name" => "jhone dao", //name (required)
+                "email" => "jhone@dau.com", //email (required)
+                "country" => "SWE", //country(optional)
+                "cellphone_number" => "+46760024938"//phone number(optional)
+            ], //inline employee data
+            'Instagram samarbete 2021-11-13.', //description for payout
+            null, //amount of payout
+            null, //cost of payout
+            120, //invoice amount of payout
+            'SEK', //currency of payout
+            json_encode([
+                "data" => "data from your system" //metadata of payout
+            ]),
+            null, //The time at which the gig will start. Displayed as ISO 8601 string.
+            null, //The time at which the gig will end. Displayed as ISO 8601 string.
+            3 //Unique identifier for the object.
+);
+return $payout->getJson();
+```
 
 ### payout-multiple-creation
 - `Gigapay` also provides API to create multiple payouts at once
