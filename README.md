@@ -1,5 +1,5 @@
 <div align="center">
-    <p><img src="cover.png" alt="Laravel In-app Purchase cover"></p>
+    <p><img src="cover.png" alt="Laravel Gigapay cover"></p>
     <p>
     <img src="https://img.shields.io/github/issues/mazimez/laravel-gigapay">
     <img src="https://img.shields.io/github/forks/mazimez/laravel-gigapay">
@@ -27,6 +27,7 @@ To understand the Event flow of `Gigapay`, you can see it's [Event Documentation
   * [Creation](#employee-creation)
   * [Retrieve single](#employee-retrieve)
   * [Update](#employee-update)
+  * [Replace](#employee-replace)
   * [Delete](#employee-delete)
   * [Resend Invite](#employee-resend)
   * [Helpers](#employee-helper)
@@ -55,6 +56,7 @@ To understand the Event flow of `Gigapay`, you can see it's [Event Documentation
   * [Creation](#webhook-creation)
   * [Retrieve single](#webhook-retrieve)
   * [Update](#webhook-update)
+  * [Replace](#webhook-replace)
   * [Delete](#webhook-delete)
 - [ListResource](#listresource)  
   * [Pagination](#paginate)
@@ -297,6 +299,25 @@ $employee = Employee::findById('1'); //getting employee by it's id
 return $employee->getJson();
 ```
 
+### employee-replace
+Replacing any Employee will actually change the ID of that employee as well as all the data of that employee with the data you have provided. keep in mind that other connect with this employee (like it's payouts) will still stay connected to it. so here you are not creating a new employee, you can just replace an existing employee with new data. refer to [Gigapay doc](https://developer.gigapay.se/#replace-an-employee) for more info.
+
+```php
+use Mazimez\Gigapay\Employee;
+
+$employee = Employee::findById('1'); //getting employee by it's id
+$employee =  $employee->replace([ //replacing the employee with new data
+    "id" => "1-2-3-4-5-6",
+    "name" => "jhone doe",
+    "email" => "testcdcdd@gmail.com",
+    "metadata" => json_encode([
+        "data" => "data from your system"
+    ]),
+    "country" => "SWE",
+]);
+return $employee->getJson(); //return the new employee instance
+```
+
 ### employee-delete
 You can delete any employee by calling the destroy method on Employee instance  but we can not delete an Employee after a `Payout` has been registered to it. get for info from [`Gigapay` doc](https://developer.gigapay.se/#delete-a-employee)
 ```php
@@ -377,7 +398,7 @@ the `getJson()` method will return the `Payout`'s object in JSON format
 - if you are using this API with some existing Employee then you can use `cost` and `amount` too, it wont create new Employee but just merge it with the given data.
 - the arguments for this method is almost same as normal create method, only change is that now instead of employee-id, you need to pass an array with info like Employee `email` and `name` etc.
 - you can get more info from [Gigapay doc](https://developer.gigapay.se/?javascript#register-a-payout-with-an-inline-employee)
-- thanks @rolandlluka for suggesting this method and adding a pull-request for it. I hope you will be suggesting more improvements too😅
+- thanks [@rolandlluka](https://github.com/rolandlluka) for suggesting this method and adding a pull-request for it. I hope you will be suggesting more improvements too😅
 ```php
 use Mazimez\Gigapay\Payout;
 
@@ -818,6 +839,18 @@ $webhook->metadata = json_encode([
 ]);
 $webhook->save(); //saving the webhook object
 return $webhook->getJson();
+```
+
+### webhook-replace
+similar to employee, webhook can also be replaced. this will update the ID of webhook too. you can get more info from [Gigapay doc](https://developer.gigapay.se/#replace-a-webhook).
+```php
+use Mazimez\Gigapay\Webhook;
+
+$webhook = Webhook::findById('1'); //getting webhook by it's id
+$webhook->replace([//replacing webhook with new data
+    'url' => "https://jobmatchr.se/webhooks/"
+]);
+return $webhook->getJson();//returning new webhook instance
 ```
 
 ### webhook-delete

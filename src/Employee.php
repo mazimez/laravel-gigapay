@@ -413,6 +413,60 @@ class Employee
     }
 
     /**
+     * replace the employee resource
+     * doc: https://developer.gigapay.se/#replace-an-employee
+     *
+     * @param array $employee array with employee's data (name is required)
+     * @return $this
+     */
+    public function replace($employee)
+    {
+        $url = Employee::getUrl() . '/' . $this->id;
+        $params = [];
+
+        if (isset($employee['id'])) {
+            $params = array_merge($params, ['id' => $employee['id']]);
+        }
+        if (!isset($employee['name'])) {
+            throw new Exception('Name is required.');
+        } else {
+            $params = array_merge($params, ['name' => $employee['name']]);
+        }
+        if (isset($employee['email'])) {
+            $params = array_merge($params, ['email' => $employee['email']]);
+        }
+        if (isset($employee['country'])) {
+            $params = array_merge($params, ['country' => $employee['country']]);
+        }
+        if (isset($employee['cellphone_number'])) {
+            $params = array_merge($params, ['cellphone_number' => $employee['cellphone_number']]);
+        }
+        if (isset($employee['metadata'])) {
+            $params = array_merge($params, ['metadata' => $employee['metadata']]);
+        }
+        $request_manager = new RequestManager();
+        $new_employee = new Employee(
+            $request_manager->getData(
+                'PUT',
+                $url,
+                [
+                    'form_params' => $params
+                ]
+            )
+        );
+        $this->id = $new_employee->id;
+        $this->name = $new_employee->name;
+        $this->email = $new_employee->email;
+        $this->country = $new_employee->country;
+        $this->metadata = $new_employee->metadata;
+        $this->created_at = $new_employee->created_at;
+        $this->notified_at = $new_employee->notified_at;
+        $this->claimed_at = $new_employee->claimed_at;
+        $this->verified_at = $new_employee->verified_at;
+        return $this;
+    }
+
+    /**
      * delete the employee(only gets deleted if no payout has been registered with this employee yet),
      * doc: https://developer.gigapay.se/#delete-a-employee
      *

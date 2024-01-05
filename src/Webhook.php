@@ -337,6 +337,53 @@ class Webhook
     }
 
     /**
+     * replace the webhook resource
+     * doc: https://developer.gigapay.se/#replace-a-webhook
+     *
+     * @param array $webhook array with webhook's data (url is required)
+     * @return $this
+     */
+    public function replace($webhook)
+    {
+        $url = Webhook::getUrl() . '/' . $this->id;
+        if (!isset($webhook['url'])) {
+            throw new Exception('Url is required');
+        }
+        $params = [];
+        if (isset($webhook['id'])) {
+            $params = array_merge($params, ['id' => $webhook['id']]);
+        }
+        if (isset($webhook['url'])) {
+            $params = array_merge($params, ['url' => $webhook['url']]);
+        }
+        if (isset($webhook['events'])) {
+            $params = array_merge($params, ['events' => $webhook['events']]);
+        }
+        if (isset($webhook['secret_key'])) {
+            $params = array_merge($params, ['secret_key' => $webhook['secret_key']]);
+        }
+        if (isset($webhook['metadata'])) {
+            $params = array_merge($params, ['metadata' => $webhook['metadata']]);
+        }
+        $request_manager = new RequestManager();
+        $new_webhook =  new Webhook(
+            $request_manager->getData(
+                'PUT',
+                $url,
+                [
+                    'form_params' => $params
+                ]
+            )
+        );
+        $this->id = $new_webhook->id;
+        $this->url = $new_webhook->url;
+        $this->events = $new_webhook->events;
+        $this->secret_key = $new_webhook->secret_key;
+        $this->metadata = $new_webhook->metadata;
+        return $this;
+    }
+
+    /**
      * delete the Invoice(only gets deleted if it's not a paid Invoice or an Invoice on credit,
      * doc: https://developer.gigapay.se/#delete-an-invoice
      *
